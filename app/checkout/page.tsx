@@ -201,11 +201,13 @@ export default function CheckoutPage() {
       }
       
       // Show order summary to user
-      console.log("Order Details:", {
+      console.log("[CHECKOUT] Order Details:", {
         items: cart.map(item => ({
+          id: item.product._id,
           name: item.product.name,
           price: item.product.price,
           quantity: item.quantity,
+          variantId: item.variant?.id
         })),
         subtotal: getCartTotal(),
         total: getCartTotal(),
@@ -213,34 +215,48 @@ export default function CheckoutPage() {
       });
       
       // 1. Create the payment intent on the server - this only happens when order is confirmed
+      console.log("[CHECKOUT] Creating payment intent with items:", JSON.stringify(cart.map(item => ({
+        id: item.product.slug?.current || item.product._id,
+        name: item.product.name,
+        variantId: item.variant?.id,
+        originalId: item.product._id
+      }))));
+      
+      const paymentData = { 
+        items: cart.map(item => ({
+          id: item.product.slug?.current || item.product._id, // Use slug as the primary ID
+          name: item.product.name,
+          price: item.product.price,
+          quantity: item.quantity,
+          image: item.product.mainImage ? urlForImage(item.product.mainImage).url() : undefined,
+          description: item.product.description,
+          variantId: item.variant?.id, // Include variant ID if available
+          originalId: item.product._id // Include original Sanity ID for reference
+        })),
+        shipping: {
+          cost: shippingCost
+        },
+        metadata: {
+          customer_email: shippingInfo.email,
+          customer_name: `${shippingInfo.firstName} ${shippingInfo.lastName}`,
+          shipping_address: `${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.state}, ${shippingInfo.zipCode}, ${shippingInfo.country}`,
+          user_id: user?.uid || '' // Include Firebase UID if available
+        }
+      };
+      
+      console.log("[CHECKOUT] Payment data:", JSON.stringify(paymentData));
+      
       const response = await fetch('/api/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          items: cart.map(item => ({
-            id: item.product._id,
-            name: item.product.name,
-            price: item.product.price,
-            quantity: item.quantity,
-            image: item.product.mainImage ? urlForImage(item.product.mainImage).url() : undefined,
-            description: item.product.description,
-            variantId: item.variant?.id // Include variant ID if available
-          })),
-          shipping: {
-            cost: shippingCost
-          },
-          metadata: {
-            customer_email: shippingInfo.email,
-            customer_name: `${shippingInfo.firstName} ${shippingInfo.lastName}`,
-            shipping_address: `${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.state}, ${shippingInfo.zipCode}, ${shippingInfo.country}`,
-            user_id: user?.uid || '' // Include Firebase UID if available
-          }
-        }),
+        body: JSON.stringify(paymentData),
       });
       
       const data = await response.json();
+      console.log("[CHECKOUT] Payment intent response:", data);
       
       if (data.error) {
+        console.error("[CHECKOUT] Payment intent creation error:", data.error);
         setPaymentError(data.error);
         setIsProcessingPayment(false);
         return;
@@ -249,6 +265,7 @@ export default function CheckoutPage() {
       // We no longer need to update tax calculation from the API response
       
       // 2. Confirm the payment with the client secret returned from the server
+      console.log("[CHECKOUT] Confirming payment with client secret");
       const { error, paymentIntent } = await stripe.confirmCardPayment(
         data.clientSecret,
         {
@@ -269,12 +286,16 @@ export default function CheckoutPage() {
         }
       );
       
+      console.log("[CHECKOUT] Payment confirmation result:", error ? `Error: ${error.message}` : `Success: ${paymentIntent?.status}`);
+      
       if (error) {
         // Payment failed - show error
+        console.error("[CHECKOUT] Payment confirmation error:", error);
         setPaymentError(error.message || 'An error occurred while processing your payment.');
         setIsProcessingPayment(false);
       } else if (paymentIntent && paymentIntent.status === 'succeeded') {
         // Payment succeeded! Move to confirmation step
+        console.log("[CHECKOUT] Payment succeeded!", paymentIntent);
         setCurrentStep("confirmation");
         clearCart();
       } else {

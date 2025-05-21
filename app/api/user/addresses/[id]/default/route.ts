@@ -5,8 +5,9 @@ import { getAdminAuth } from '@/lib/firebaseAdmin';
 // PUT to set an address as default
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { params } = context;
   try {
     // Get the authorization token from the header
     const authHeader = request.headers.get('authorization');

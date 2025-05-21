@@ -47,12 +47,12 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-6">
+    <div className=" shadow rounded-lg p-6">
       <h2 className="text-xl font-semibold mb-6">Notification Preferences</h2>
       
       <form onSubmit={handleSubmit} className="space-y-8">
         <div>
-          <h3 className="text-lg font-medium text-gray-900">Email Notifications</h3>
+          <h3 className="text-lg font-medium ">Email Notifications</h3>
           <p className="text-sm text-gray-500 mb-4">We'll send notifications to: {user?.email}</p>
           
           <div className="mt-4 space-y-4">
@@ -127,7 +127,7 @@ export default function NotificationsPage() {
         </div>
         
         <div className="pt-6 border-t border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">SMS Notifications</h3>
+          <h3 className="text-lg font-medium ">SMS Notifications</h3>
           
           <div className="mt-4 mb-6">
             <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone number for SMS</label>

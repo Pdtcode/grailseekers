@@ -29,8 +29,9 @@ async function getUserFromToken(request: NextRequest) {
 // GET a specific address
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { params } = context;
   try {
     const user = await getUserFromToken(request);
     
@@ -71,8 +72,9 @@ export async function GET(
 // PUT to update an address
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { params } = context;
   try {
     const user = await getUserFromToken(request);
     
@@ -147,8 +149,9 @@ export async function PUT(
 // DELETE an address
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { params } = context;
   try {
     const user = await getUserFromToken(request);
     

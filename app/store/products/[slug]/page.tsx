@@ -11,9 +11,9 @@ import { AddToCartButtonWrapper } from "@/components/product-actions";
 export const revalidate = 60; // Revalidate this page every 60 seconds
 
 interface ProductPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 async function getProduct(slug: string) {
@@ -21,7 +21,9 @@ async function getProduct(slug: string) {
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const product = await getProduct(params.slug);
+  // Await the params object before accessing its properties
+  const { slug } = await params;
+  const product = await getProduct(slug);
 
   if (!product) {
     notFound();

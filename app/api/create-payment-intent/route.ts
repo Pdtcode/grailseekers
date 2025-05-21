@@ -1,5 +1,6 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
+import prisma from "@/lib/prismaClient";
 
 // Make sure the Stripe secret key is defined
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -107,8 +108,16 @@ export async function POST(request: Request) {
     // We now only use the subtotal as the total
     const total = subtotal;
     
-    // Create a payment intent with additional options for better testing
-    // This will only be called when the user confirms their order
+    // Prepare items for metadata
+    const itemsForMetadata = items.map(item => ({
+      id: item.id,
+      variantId: item.variantId,
+      quantity: item.quantity,
+      price: item.price,
+      name: item.name
+    }));
+    
+    // Create a payment intent with additional options
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(subtotal * 100), // convert dollars to cents
       currency: "usd",
@@ -119,38 +128,177 @@ export async function POST(request: Request) {
         tax_amount: taxAmountDollars.toString(),
         item_count: items.length.toString(),
         created_at: new Date().toISOString(),
-        // Include detailed item information for order creation in webhook
-        items: JSON.stringify(items.map(item => ({
-          id: item.id,
-          variantId: item.variantId,
-          quantity: item.quantity,
-          price: item.price
-        }))),
+        // Include detailed item information for order creation
+        items: JSON.stringify(itemsForMetadata),
         user_id: metadata?.user_id || '',
       },
       description: `Order for ${customerName || 'Customer'}`,
       receipt_email: customerEmail,
-      // Explicitly specify payment methods to exclude Link
       payment_method_types: ['card'],
-      // Adding statement descriptor
       statement_descriptor: 'GrailSeekers Order',
-      // Add shipping info if available
       shipping: shippingAddressData ? {
         name: customerName,
         address: shippingAddressData,
       } : undefined,
-      // Link to the tax calculation if available
       tax_calculation: taxCalculation?.id,
-      // Capture method - automatically capture the payment
       capture_method: 'automatic',
     });
+    
+    // Create order directly in database after payment intent creation
+    try {
+      // Extract user information
+      const firebaseUid = metadata?.user_id || null;
+      
+      // Find or create user
+      let user = null;
+      
+      if (firebaseUid) {
+        user = await prisma.user.findUnique({
+          where: { firebaseUid },
+        });
+      }
+      
+      if (!user && customerEmail) {
+        user = await prisma.user.findUnique({
+          where: { email: customerEmail },
+        });
+      }
+      
+      if (!user && customerEmail) {
+        user = await prisma.user.create({
+          data: {
+            email: customerEmail,
+            name: customerName,
+            firebaseUid: firebaseUid || null,
+          },
+        });
+      }
+      
+      if (!user) {
+        throw new Error("Could not identify user for this order");
+      }
+      
+      // Create shipping address if provided
+      let shippingAddressId = null;
+      if (shippingAddressData) {
+        const address = await prisma.address.create({
+          data: {
+            userId: user.id,
+            street: shippingAddressData.line1,
+            city: shippingAddressData.city,
+            state: shippingAddressData.state,
+            postalCode: shippingAddressData.postal_code,
+            country: shippingAddressData.country,
+          },
+        });
+        
+        shippingAddressId = address.id;
+      }
+      
+      // Create the order
+      const order = await prisma.order.create({
+        data: {
+          orderNumber: `ORD-${Date.now()}`,
+          userId: user.id,
+          total: subtotal,
+          status: "PROCESSING",
+          stripePaymentIntentId: paymentIntent.id,
+          shippingAddressId,
+        },
+      });
+      
+      // Create order items
+      for (const item of items) {
+        try {
+          // Try different ways to find the product
+          let product = null;
+          
+          // First try by slug match since we're now using slugs as primary identifiers
+          product = await prisma.product.findFirst({
+            where: { slug: item.id },
+            include: { variants: true },
+          });
+          
+          if (!product) {
+            // Try by direct ID match if slug lookup fails
+            product = await prisma.product.findFirst({
+              where: { id: item.id },
+              include: { variants: true },
+            });
+            
+            // If provided, try with the original Sanity ID
+            if (!product && item.originalId) {
+              // Try to find a product that might have been created using the Sanity ID before
+              product = await prisma.product.findFirst({
+                where: { id: item.originalId },
+                include: { variants: true },
+              });
+            }
+            
+            if (!product && item.name) {
+              // Try by name as a last resort
+              product = await prisma.product.findFirst({
+                where: { name: item.name },
+                include: { variants: true },
+              });
+            }
+          }
+          
+          if (!product) {
+            // Create a fallback product in the database to complete the order
+            product = await prisma.product.create({
+              data: {
+                id: item.originalId || item.id || `temp-${Date.now()}`, // Use originalId (Sanity ID) if available
+                name: item.name || `Product from order ${order.id}`,
+                description: item.description || 'Added during checkout',
+                price: item.price,
+                images: item.image ? [item.image] : [],
+                slug: item.id || `temp-product-${Date.now()}`, // Use the slug/ID from cart
+                inStock: true
+              },
+              include: { variants: true }
+            });
+          }
+          
+          // Find variant if specified
+          let variantId = null;
+          if (item.variantId && product) {
+            const variant = product.variants.find(v => v.id === item.variantId);
+            if (variant) {
+              variantId = variant.id;
+              
+              // Update variant stock
+              await prisma.productVariant.update({
+                where: { id: variant.id },
+                data: { stock: variant.stock - item.quantity },
+              });
+            }
+          }
 
+          // Create order item
+          await prisma.orderItem.create({
+            data: {
+              orderId: order.id,
+              productId: product.id,
+              variantId,
+              quantity: item.quantity,
+              price: product.price,
+            },
+          });
+        } catch (error) {
+          console.error(`Error processing item: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      }
+    } catch (orderError) {
+      // Continue and return payment intent - we don't want to fail the payment
+      console.error(`Error creating order: ${orderError instanceof Error ? orderError.message : 'Unknown error'}`);
+    }
+    
     return NextResponse.json({ 
       clientSecret: paymentIntent.client_secret,
       total: subtotal
     });
   } catch (error: any) {
-    console.error("Stripe payment intent error:", error);
     return NextResponse.json(
       { error: error.message },
       { status: 500 }

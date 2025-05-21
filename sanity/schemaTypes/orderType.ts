@@ -1,0 +1,117 @@
+import { defineField, defineType } from 'sanity'
+import syncOrdersAction from '../actions/syncOrdersAction'
+
+export default defineType({
+  name: 'order',
+  title: 'Order',
+  type: 'document',
+  fields: [
+    defineField({
+      name: 'orderNumber',
+      title: 'Order Number',
+      type: 'string',
+      validation: Rule => Rule.required(),
+    }),
+    defineField({
+      name: 'userId',
+      title: 'User ID',
+      type: 'string',
+      validation: Rule => Rule.required(),
+    }),
+    defineField({
+      name: 'customerEmail',
+      title: 'Customer Email',
+      type: 'string',
+    }),
+    defineField({
+      name: 'customerName',
+      title: 'Customer Name',
+      type: 'string',
+    }),
+    defineField({
+      name: 'total',
+      title: 'Total',
+      type: 'number',
+      validation: Rule => Rule.required().precision(2),
+    }),
+    defineField({
+      name: 'status',
+      title: 'Status',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Pending', value: 'PENDING' },
+          { title: 'Processing', value: 'PROCESSING' },
+          { title: 'Shipped', value: 'SHIPPED' },
+          { title: 'Delivered', value: 'DELIVERED' },
+          { title: 'Cancelled', value: 'CANCELLED' },
+        ],
+        layout: 'dropdown',
+      },
+      validation: Rule => Rule.required(),
+    }),
+    defineField({
+      name: 'items',
+      title: 'Items',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            { name: 'productId', type: 'string', title: 'Product ID' },
+            { name: 'variantId', type: 'string', title: 'Variant ID' },
+            { name: 'name', type: 'string', title: 'Product Name' },
+            { name: 'quantity', type: 'number', title: 'Quantity' },
+            { name: 'price', type: 'number', title: 'Price' },
+          ],
+        },
+      ],
+    }),
+    defineField({
+      name: 'shippingAddress',
+      title: 'Shipping Address',
+      type: 'object',
+      fields: [
+        { name: 'name', type: 'string', title: 'Name' },
+        { name: 'street', type: 'string', title: 'Street' },
+        { name: 'city', type: 'string', title: 'City' },
+        { name: 'state', type: 'string', title: 'State' },
+        { name: 'postalCode', type: 'string', title: 'Postal Code' },
+        { name: 'country', type: 'string', title: 'Country' },
+      ],
+    }),
+    defineField({
+      name: 'stripePaymentIntentId',
+      title: 'Stripe Payment Intent ID',
+      type: 'string',
+    }),
+    defineField({
+      name: 'createdAt',
+      title: 'Created At',
+      type: 'datetime',
+      validation: Rule => Rule.required(),
+    }),
+    defineField({
+      name: 'updatedAt',
+      title: 'Updated At',
+      type: 'datetime',
+      validation: Rule => Rule.required(),
+    }),
+    defineField({
+      name: 'notes',
+      title: 'Admin Notes',
+      type: 'text',
+    }),
+  ],
+  preview: {
+    select: {
+      title: 'orderNumber',
+      subtitle: 'status',
+    },
+  },
+  
+  // Add custom actions
+  actions: (prev, context) => {
+    return [...prev, syncOrdersAction(context)]
+  },
+})

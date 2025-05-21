@@ -88,6 +88,25 @@ export async function updateOrderStatus(orderId: string, status: 'PENDING' | 'PR
       data: { status },
     });
 
+    // Sync order to Sanity after status update
+    try {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+      if (appUrl) {
+        const syncResponse = await fetch(`${appUrl}/api/sync/orders`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId: order.id }),
+        });
+        
+        if (!syncResponse.ok) {
+          console.error(`Failed to sync order ${order.id} to Sanity after status update`);
+        }
+      }
+    } catch (syncError) {
+      console.error('Error syncing order to Sanity:', syncError);
+      // Continue processing, don't fail the order update
+    }
+
     return order;
   } catch (error) {
     console.error('Error updating order status:', error);

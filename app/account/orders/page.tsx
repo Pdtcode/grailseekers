@@ -72,7 +72,7 @@ export default function OrdersPage() {
   // If user is not authenticated, show login message
   if (!user && !loading) {
     return (
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className=" shadow rounded-lg p-6">
         <h2 className="text-xl font-semibold mb-6">My Orders</h2>
         <div className="text-center py-12">
           <p className="text-gray-500">Please log in to view your orders.</p>
@@ -82,7 +82,7 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="bg-white shadow rounded-lg p-6">
+    <div className=" shadow rounded-lg p-6">
       <h2 className="text-xl font-semibold mb-6">My Orders</h2>
       
       {loading ? (
@@ -97,7 +97,7 @@ export default function OrdersPage() {
         <div className="space-y-8">
           {orders.map((order) => (
             <div key={order.id} className="border rounded-lg overflow-hidden">
-              <div className="bg-gray-50 px-4 py-3 border-b flex justify-between items-center">
+              <div className=" px-4 py-3 border-b flex justify-between items-center">
                 <div>
                   <p className="font-medium">{order.orderNumber}</p>
                   <p className="text-sm text-gray-500">

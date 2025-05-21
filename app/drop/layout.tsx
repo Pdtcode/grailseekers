@@ -131,12 +131,12 @@ export default function DropLayout({
             {/* Instagram Link */}
             <Link
               className="inline-flex items-center justify-center gap-2 bg-gradient-to-tr from-purple-600 to-pink-500 hover:from-pink-500 hover:to-purple-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
-              href="https://www.instagram.com/grailseekers/"
+              href="https://www.instagram.com/grail__seekers/"
               rel="noopener noreferrer"
               target="_blank"
             >
               <ThemeInstagram size={24} />
-              <span>@grailseekers</span>
+              <span>@grail__seekers</span>
             </Link>
 
             <p className="text-white/60 text-sm mt-6">
@@ -155,11 +155,6 @@ export default function DropLayout({
               textColor="white"
             />
           </div>
-        )}
-
-        {/* Error message */}
-        {error && !loading && (
-          <div className="text-red-400 bg-black/50 p-3 rounded-lg">{error}</div>
         )}
 
         {/* Show children only if there's an active drop */}

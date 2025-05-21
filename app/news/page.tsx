@@ -54,12 +54,12 @@ export default async function NewsPage() {
                 </span>
               </div>
               <h2
-                className={title({ size: "md", className: "mb-4" }).toString()}
+                className={title({ size: "s", className: "mb-2" }).toString()}
               >
                 {posts[0].title}
               </h2>
               {posts[0].excerpt && (
-                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                <p className="text-gray-600 text-xs dark:text-gray-300 mb-2">
                   {posts[0].excerpt}
                 </p>
               )}

@@ -8,6 +8,8 @@ import {dropPasswordType} from './dropPasswordType'
 import dropSettingsType from './dropSettingsType'
 import {productType} from './productType'
 import {collectionType} from './collectionType'
+import orderType from './orderType'
+import syncStateType from './syncStateType'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
@@ -20,9 +22,11 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     productType, 
     categoryType, 
     collectionType,
+    orderType,
     
     // Utility types
     dropPasswordType,
     dropSettingsType,
+    syncStateType,
   ],
 }

@@ -42,9 +42,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [cart]);
 
   const addToCart = (product: Product, quantity = 1) => {
+    // Get Sanity ID for the product
+    const productId = product.slug?.current || product._id;
+    
     setCart(prevCart => {
       const existingItemIndex = prevCart.findIndex(
-        item => item.product._id === product._id
+        item => (item.product.slug?.current || item.product._id) === productId
       );
 
       if (existingItemIndex >= 0) {
@@ -64,7 +67,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const removeFromCart = (productId: string) => {
     setCart(prevCart => 
-      prevCart.filter(item => item.product._id !== productId)
+      prevCart.filter(item => (item.product.slug?.current || item.product._id) !== productId)
     );
   };
 
@@ -76,7 +79,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     setCart(prevCart => 
       prevCart.map(item => 
-        item.product._id === productId
+        (item.product.slug?.current || item.product._id) === productId
           ? { ...item, quantity }
           : item
       )
