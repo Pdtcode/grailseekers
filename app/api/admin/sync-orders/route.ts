@@ -43,8 +43,9 @@ async function syncOrders() {
           { orderNumber: order.orderNumber }
         );
 
-        // Prepare order items
+        // Prepare order items - add _key property for Sanity array items
         const orderItems = order.items.map(item => ({
+          _key: item.id, // Use the order item ID as the _key
           productId: item.productId,
           variantId: item.variantId || '',
           name: item.product.name,

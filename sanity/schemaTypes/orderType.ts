@@ -58,11 +58,12 @@ export default defineType({
         {
           type: 'object',
           fields: [
-            { name: 'productId', type: 'string', title: 'Product ID' },
-            { name: 'variantId', type: 'string', title: 'Variant ID' },
-            { name: 'name', type: 'string', title: 'Product Name' },
-            { name: 'quantity', type: 'number', title: 'Quantity' },
-            { name: 'price', type: 'number', title: 'Price' },
+            defineField({ name: '_key', type: 'string', title: 'Key' }), // Add explicit _key field
+            defineField({ name: 'productId', type: 'string', title: 'Product ID' }),
+            defineField({ name: 'variantId', type: 'string', title: 'Variant ID' }),
+            defineField({ name: 'name', type: 'string', title: 'Product Name' }),
+            defineField({ name: 'quantity', type: 'number', title: 'Quantity' }),
+            defineField({ name: 'price', type: 'number', title: 'Price' }),
           ],
         },
       ],
@@ -72,12 +73,12 @@ export default defineType({
       title: 'Shipping Address',
       type: 'object',
       fields: [
-        { name: 'name', type: 'string', title: 'Name' },
-        { name: 'street', type: 'string', title: 'Street' },
-        { name: 'city', type: 'string', title: 'City' },
-        { name: 'state', type: 'string', title: 'State' },
-        { name: 'postalCode', type: 'string', title: 'Postal Code' },
-        { name: 'country', type: 'string', title: 'Country' },
+        defineField({ name: 'name', type: 'string', title: 'Name' }),
+        defineField({ name: 'street', type: 'string', title: 'Street' }),
+        defineField({ name: 'city', type: 'string', title: 'City' }),
+        defineField({ name: 'state', type: 'string', title: 'State' }),
+        defineField({ name: 'postalCode', type: 'string', title: 'Postal Code' }),
+        defineField({ name: 'country', type: 'string', title: 'Country' }),
       ],
     }),
     defineField({

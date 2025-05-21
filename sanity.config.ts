@@ -12,7 +12,8 @@ import {structureTool} from 'sanity/structure'
 import {apiVersion, dataset, projectId} from './sanity/env'
 import {schema} from './sanity/schemaTypes'
 import {structure} from './sanity/structure'
-import orderSyncPlugin from './sanity/plugins/order-sync'
+// Import the specific plugin function
+import { orderSyncPlugin } from './sanity/plugins/order-sync'
 
 export default defineConfig({
   basePath: '/studio',
