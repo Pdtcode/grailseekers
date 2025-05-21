@@ -73,14 +73,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       if (!response.ok) {
-        console.error('Failed to sync user with database');
+        // Use safer logging method to prevent any issues
+        const errorText = `Failed to sync user with database: ${response.status}`;
+        console.warn(errorText);
         return null;
       }
       
       const dbUser = await response.json();
       return dbUser;
     } catch (error) {
-      console.error('Error syncing user with database:', error);
+      // Use safer logging method
+      console.warn('Error syncing user with database:', error instanceof Error ? error.message : String(error));
       return null;
     }
   };
@@ -149,7 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAddressesCache(addresses);
       return addresses;
     } catch (error) {
-      console.error('Error fetching addresses:', error);
+      console.warn('Error fetching addresses:', error instanceof Error ? error.message : String(error));
       return [];
     }
   };
@@ -161,7 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const defaultAddress = addresses.find(addr => addr.isDefault);
       return defaultAddress || null;
     } catch (error) {
-      console.error('Error getting default address:', error);
+      console.warn('Error getting default address:', error instanceof Error ? error.message : String(error));
       return null;
     }
   };
@@ -194,7 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       return newAddress;
     } catch (error) {
-      console.error('Error saving address:', error);
+      console.warn('Error saving address:', error instanceof Error ? error.message : String(error));
       throw error;
     }
   };
@@ -227,7 +230,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       return updatedAddress;
     } catch (error) {
-      console.error('Error updating address:', error);
+      console.warn('Error updating address:', error instanceof Error ? error.message : String(error));
       throw error;
     }
   };
@@ -256,7 +259,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       return true;
     } catch (error) {
-      console.error('Error deleting address:', error);
+      console.warn('Error deleting address:', error instanceof Error ? error.message : String(error));
       return false;
     }
   };
@@ -285,7 +288,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       return true;
     } catch (error) {
-      console.error('Error setting default address:', error);
+      console.warn('Error setting default address:', error instanceof Error ? error.message : String(error));
       return false;
     }
   };
