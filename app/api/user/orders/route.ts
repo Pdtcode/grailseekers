@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserOrders } from '@/lib/orderQueries';
+import { getUserOrders } from '@/app/actions/orderActions';
 import prisma from '@/lib/prismaClient';
 
 export async function GET(request: NextRequest) {

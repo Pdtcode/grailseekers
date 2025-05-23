@@ -212,7 +212,7 @@ export default function AddressesPage() {
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-6">
+    <div className=" shadow rounded-lg p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">Shipping Addresses</h2>
         {!isAdding && !isEditing && (

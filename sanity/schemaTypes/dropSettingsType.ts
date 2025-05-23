@@ -44,6 +44,18 @@ export default {
       type: 'datetime',
       description: 'When the drop ends',
     },
+    {
+      name: 'dropProducts',
+      title: 'Drop Products',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{ type: 'product' }]
+        }
+      ],
+      description: 'Products available in this drop',
+    },
   ],
   preview: {
     select: {

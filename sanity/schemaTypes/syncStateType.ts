@@ -36,6 +36,7 @@ export default defineType({
       fields: [
         defineField({ name: 'created', type: 'number', title: 'Created' }),
         defineField({ name: 'updated', type: 'number', title: 'Updated' }),
+        defineField({ name: 'deleted', type: 'number', title: 'Deleted' }),
         defineField({ name: 'errors', type: 'number', title: 'Errors' }),
         defineField({ name: 'total', type: 'number', title: 'Total Processed' }),
       ],

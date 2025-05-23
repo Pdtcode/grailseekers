@@ -58,7 +58,8 @@ export default defineType({
         {
           type: 'object',
           fields: [
-            defineField({ name: '_key', type: 'string', title: 'Key' }), // Add explicit _key field
+            // Note: _key is a system field automatically added by Sanity, not defined here
+            defineField({ name: 'itemId', type: 'string', title: 'Item ID', initialValue: () => Date.now().toString(36) + Math.random().toString(36).substring(2, 5) }),
             defineField({ name: 'productId', type: 'string', title: 'Product ID' }),
             defineField({ name: 'variantId', type: 'string', title: 'Variant ID' }),
             defineField({ name: 'name', type: 'string', title: 'Product Name' }),

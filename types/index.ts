@@ -87,4 +87,5 @@ export interface Product {
   publishedAt?: string;
   variants?: ProductVariant[];
   shopURL?: string;
+  dropExclusive?: boolean;
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { formatOrderDate, getOrderStatusText } from '@/lib/orderQueries';
+import { formatOrderDate, getOrderStatusText } from '@/lib/orderUtils';
 
 interface OrderItem {
   id: string;
@@ -117,7 +117,7 @@ export default function OrdersPage() {
               </div>
               
               <div className="p-4">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Items</h3>
+                <h3 className="text-sm font-medium  mb-2">Items</h3>
                 <ul className="divide-y divide-gray-200">
                   {order.items.map((item) => (
                     <li key={item.id} className="py-3 flex justify-between">

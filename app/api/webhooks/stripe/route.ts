@@ -111,23 +111,62 @@ async function createOrderFromStripePayment(
       console.log(`[ORDER-CREATE] Address parts found: ${addressParts.length}`);
       
       if (addressParts.length >= 5) {
-        console.log(`[ORDER-CREATE] Creating shipping address for user ${user.id}`);
+        const street = addressParts[0];
+        const city = addressParts[1];
+        const state = addressParts[2];
+        const postalCode = addressParts[3];
+        const country = addressParts[4];
+
+        // First, check if this is the user's default address (or an existing address) - if so, use that
+        console.log(`[ORDER-CREATE] Checking for existing addresses for user ${user.id}`);
         try {
-          const address = await prisma.address.create({
-            data: {
+          // Look for default address first
+          let existingAddress = await prisma.address.findFirst({
+            where: {
               userId: user.id,
-              street: addressParts[0],
-              city: addressParts[1],
-              state: addressParts[2],
-              postalCode: addressParts[3],
-              country: addressParts[4],
-            },
+              isDefault: true
+            }
           });
-          
-          shippingAddressId = address.id;
-          console.log(`[ORDER-CREATE] Created shipping address: ${address.id}`);
+
+          // If no default address, check if this address already exists for the user
+          if (!existingAddress) {
+            existingAddress = await prisma.address.findFirst({
+              where: {
+                userId: user.id,
+                street,
+                city,
+                state,
+                postalCode
+              }
+            });
+          }
+
+          if (existingAddress) {
+            // Use existing address
+            shippingAddressId = existingAddress.id;
+            console.log(`[ORDER-CREATE] Using existing address: ${existingAddress.id}`);
+          } else if (metadata?.save_address === 'true') {
+            // Only create a new address if explicitly requested to save it
+            console.log(`[ORDER-CREATE] Creating shipping address for user ${user.id}`);
+            const address = await prisma.address.create({
+              data: {
+                userId: user.id,
+                street,
+                city,
+                state,
+                postalCode,
+                country,
+              },
+            });
+            
+            shippingAddressId = address.id;
+            console.log(`[ORDER-CREATE] Created shipping address: ${address.id}`);
+          } else {
+            // Don't create a permanently saved address, just use the address data for the order
+            console.log(`[ORDER-CREATE] Not saving address since save_address was not set to true`);
+          }
         } catch (error: any) {
-          console.error(`[ORDER-CREATE] Error creating shipping address: ${error.message}`);
+          console.error(`[ORDER-CREATE] Error processing shipping address: ${error.message}`);
         }
       } else {
         console.log(`[ORDER-CREATE] Invalid shipping address format, not enough parts`);

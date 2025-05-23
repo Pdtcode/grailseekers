@@ -30,9 +30,34 @@ async function syncOrders() {
       },
     });
 
+    // Get all current order numbers from the database
+    const dbOrderNumbers = orders.map(order => order.orderNumber);
+    
+    // Get all orders from Sanity
+    const sanityOrders = await client.fetch(
+      `*[_type == "order"] { _id, orderNumber }`
+    );
+
     let createdCount = 0;
     let updatedCount = 0;
+    let deletedCount = 0;
     let errorCount = 0;
+
+    // Find orders that exist in Sanity but not in the database (deleted)
+    const deletedOrders = sanityOrders.filter(
+      sanityOrder => !dbOrderNumbers.includes(sanityOrder.orderNumber)
+    );
+
+    // Delete orders from Sanity that no longer exist in the database
+    for (const deletedOrder of deletedOrders) {
+      try {
+        await client.delete(deletedOrder._id);
+        deletedCount++;
+      } catch (error) {
+        errorCount++;
+        console.error(`Error deleting order ${deletedOrder.orderNumber}:`, error);
+      }
+    }
 
     // Process each order
     for (const order of orders) {
@@ -43,9 +68,10 @@ async function syncOrders() {
           { orderNumber: order.orderNumber }
         );
 
-        // Prepare order items - add _key property for Sanity array items
+        // Prepare order items - add _key and itemId properties for Sanity array items
         const orderItems = order.items.map(item => ({
-          _key: item.id, // Use the order item ID as the _key
+          _key: item.id, // Special Sanity-required system field for arrays
+          itemId: item.id, // Keep our custom ID field
           productId: item.productId,
           variantId: item.variantId || '',
           name: item.product.name,
@@ -108,6 +134,7 @@ async function syncOrders() {
       const syncStats = {
         created: createdCount,
         updated: updatedCount,
+        deleted: deletedCount,
         errors: errorCount,
         total: orders.length,
       };
@@ -140,6 +167,7 @@ async function syncOrders() {
       status: 'success',
       created: createdCount,
       updated: updatedCount,
+      deleted: deletedCount,
       errors: errorCount,
       total: orders.length,
     };
@@ -165,6 +193,7 @@ async function syncOrders() {
             syncStats: {
               created: 0,
               updated: 0,
+              deleted: 0,
               errors: 1,
               total: 0,
             },
@@ -179,6 +208,7 @@ async function syncOrders() {
           syncStats: {
             created: 0,
             updated: 0,
+            deleted: 0,
             errors: 1,
             total: 0,
           },

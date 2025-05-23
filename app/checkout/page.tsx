@@ -39,6 +39,7 @@ export default function CheckoutPage() {
     zipCode: "",
     country: "US",
   });
+  const [saveAddressToAccount, setSaveAddressToAccount] = useState<boolean>(false);
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [loadingAddresses, setLoadingAddresses] = useState<boolean>(false);
@@ -240,7 +241,8 @@ export default function CheckoutPage() {
           customer_email: shippingInfo.email,
           customer_name: `${shippingInfo.firstName} ${shippingInfo.lastName}`,
           shipping_address: `${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.state}, ${shippingInfo.zipCode}, ${shippingInfo.country}`,
-          user_id: user?.uid || '' // Include Firebase UID if available
+          user_id: user?.uid || '', // Include Firebase UID if available
+          save_address: saveAddressToAccount ? 'true' : 'false' // Include whether to save address
         }
       };
       
@@ -657,6 +659,23 @@ export default function CheckoutPage() {
                     </select>
                   </div>
                 </div>
+                
+                {user && (
+                  <div className="mt-6">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="saveAddress"
+                        checked={saveAddressToAccount}
+                        onChange={() => setSaveAddressToAccount(!saveAddressToAccount)}
+                        className="mr-2"
+                      />
+                      <label htmlFor="saveAddress" className="text-sm">
+                        Save this address to my account
+                      </label>
+                    </div>
+                  </div>
+                )}
 
                 <h3 className="text-lg font-medium mt-6 mb-3">Shipping Method</h3>
                 <div className="space-y-3 mb-6">

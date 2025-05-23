@@ -42,7 +42,7 @@ export const postBySlugQuery = groq`*[_type == "post" && slug.current == $slug][
 /**
  * Query to get featured products for the homepage
  */
-export const featuredProductsQuery = groq`*[_type == "product" && featured == true] {
+export const featuredProductsQuery = groq`*[_type == "product" && featured == true && dropExclusive != true] {
   _id,
   name,
   slug,
@@ -60,7 +60,7 @@ export const featuredProductsQuery = groq`*[_type == "product" && featured == tr
 /**
  * Query to get all products
  */
-export const allProductsQuery = groq`*[_type == "product"] {
+export const allProductsQuery = groq`*[_type == "product" && dropExclusive != true] {
   _id,
   name,
   slug,
@@ -117,7 +117,7 @@ export const categoriesQuery = groq`*[_type == "category"] | order(order asc) {
 /**
  * Query to get all products in a category
  */
-export const productsByCategoryQuery = groq`*[_type == "product" && references(*[_type == "category" && slug.current == $slug]._id)] {
+export const productsByCategoryQuery = groq`*[_type == "product" && dropExclusive != true && references(*[_type == "category" && slug.current == $slug]._id)] {
   _id,
   name,
   slug,
@@ -158,7 +158,7 @@ export const collectionBySlugQuery = groq`*[_type == "collection" && slug.curren
   endDate,
   highlight,
   collectionType,
-  "products": products[]-> {
+  "products": products[]->[dropExclusive != true] {
     _id,
     name,
     slug,
@@ -189,5 +189,35 @@ export const activeDropSettingsQuery = groq`*[_type == "dropSettings" && active 
   },
   dropDescription,
   startDate,
-  endDate
+  endDate,
+  "dropProducts": dropProducts[]-> {
+    _id,
+    name,
+    slug,
+    price,
+    comparePrice,
+    mainImage,
+    description,
+    inStock,
+    shopURL,
+    variants,
+    dropExclusive
+  }
 }`;
+
+/**
+ * Query to get drop-exclusive products (products only available in drops)
+ */
+export const dropExclusiveProductsQuery = groq`*[_type == "product" && dropExclusive == true] {
+  _id,
+  name,
+  slug,
+  price,
+  comparePrice,
+  mainImage,
+  description,
+  inStock,
+  shopURL,
+  variants,
+  dropExclusive
+} | order(publishedAt desc)`;

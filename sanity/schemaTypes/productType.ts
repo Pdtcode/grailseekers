@@ -58,7 +58,7 @@ export const productType = defineType({
           options: {
             hotspot: true,
           },
-          // Images will automatically get _key from Sanity
+          // Images will automatically get a unique key from Sanity
         },
       ],
     }),
@@ -101,7 +101,7 @@ export const productType = defineType({
           type: "object",
           fields: [
             defineField({
-              name: "_key",
+              name: "variantId",
               title: "Variant ID",
               type: "string",
               description: "Unique identifier for this variant",
@@ -120,7 +120,7 @@ export const productType = defineType({
               type: "array",
               of: [{ 
                 type: "string",
-                // Each option will get an auto-generated _key
+                // Each option will get an auto-generated unique key
               }],
               validation: (Rule) => Rule.required(),
             }),
@@ -133,6 +133,13 @@ export const productType = defineType({
       title: "External Shop URL",
       description: "Link to where this product can be purchased",
       type: "url",
+    }),
+    defineField({
+      name: "dropExclusive",
+      title: "Drop Exclusive",
+      description: "Only show this product in password-protected drops, not in the main store",
+      type: "boolean",
+      initialValue: false,
     }),
   ],
   preview: {

@@ -38,25 +38,25 @@ export default function AccountLayout({
           <nav className="space-y-1">
             <Link 
               href="/account" 
-              className="block px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              className="block px-3 py-2 rounded-md text-sm font-medium  hover:bg-gray-100 hover:text-gray-900"
             >
               Account Information
             </Link>
             <Link 
               href="/account/addresses" 
-              className="block px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              className="block px-3 py-2 rounded-md text-sm font-medium  hover:bg-gray-100 hover:text-gray-900"
             >
               Shipping Addresses
             </Link>
             <Link 
               href="/account/orders" 
-              className="block px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              className="block px-3 py-2 rounded-md text-sm font-medium  hover:bg-gray-100 hover:text-gray-900"
             >
               My Orders
             </Link>
             <Link 
               href="/account/notifications" 
-              className="block px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              className="block px-3 py-2 rounded-md text-sm font-medium  hover:bg-gray-100 hover:text-gray-900"
             >
               Notifications
             </Link>

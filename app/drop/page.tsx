@@ -2,11 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
 
 import CircularTextSpinner from "@/components/circular-text-spinner";
 import VideoPreloader from "@/components/video-preloader";
 import { client } from "@/sanity/lib/client";
-import { activeDropSettingsQuery } from "@/lib/queries";
+import { activeDropSettingsQuery, dropExclusiveProductsQuery } from "@/lib/queries";
+import { urlForImage } from "@/sanity/lib/image";
+import { Product } from "@/types";
 
 interface DropSettings {
   title?: string;
@@ -18,6 +22,7 @@ interface DropSettings {
     };
   };
   dropDescription?: string;
+  dropProducts?: Product[];
 }
 
 export default function DropPage() {
@@ -26,6 +31,7 @@ export default function DropPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [dropSettings, setDropSettings] = useState<DropSettings>({});
+  const [dropExclusiveProducts, setDropExclusiveProducts] = useState<Product[]>([]);
   const [isVideoPreloaded, setIsVideoPreloaded] = useState(false);
   const router = useRouter();
 
@@ -37,15 +43,20 @@ export default function DropPage() {
 
         setAuthenticated(res.ok && data.authenticated);
 
-        // After checking auth, fetch drop settings
+        // After checking auth, fetch drop settings and exclusive products
         try {
           // Use the predefined query from queries.ts
-          const settings = await client.fetch(activeDropSettingsQuery);
+          const [settings, exclusiveProducts] = await Promise.all([
+            client.fetch(activeDropSettingsQuery),
+            client.fetch(dropExclusiveProductsQuery)
+          ]);
 
           console.log("Drop page settings:", settings);
+          console.log("Drop exclusive products:", exclusiveProducts);
           setDropSettings(settings || {});
+          setDropExclusiveProducts(exclusiveProducts || []);
         } catch (err) {
-          console.error("Error fetching drop settings:", err);
+          console.error("Error fetching drop data:", err);
         }
 
         setLoading(false);
@@ -159,18 +170,98 @@ export default function DropPage() {
           "Welcome to our exclusive limited-time collection. These items are only available for a short period."}
       </p>
 
-      {/* Add your exclusive content here */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-        {/* Example product cards - replace with your actual drop content */}
-        <div className="bg-black/50 border border-gray-700 rounded-lg p-4 hover:border-white transition-colors">
-          <h3 className="text-xl font-bold">Limited Edition Shirt</h3>
-          <p className="text-gray-400 mt-2">Only 50 available</p>
-        </div>
-        <div className="bg-black/50 border border-gray-700 rounded-lg p-4 hover:border-white transition-colors">
-          <h3 className="text-xl font-bold">Collector&apos;s Hoodie</h3>
-          <p className="text-gray-400 mt-2">Numbered series</p>
-        </div>
-      </div>
+      {/* Drop Products */}
+      {(() => {
+        // Combine drop products and drop-exclusive products
+        const allDropProducts = [
+          ...(dropSettings.dropProducts || []),
+          ...dropExclusiveProducts,
+        ];
+
+        return allDropProducts.length > 0 ? (
+          <div>
+            {dropSettings.dropProducts && dropSettings.dropProducts.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold mb-4 text-center">Featured Drop Items</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {dropSettings.dropProducts.map((product) => (
+                    <ProductCard key={product._id} product={product} />
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {dropExclusiveProducts.length > 0 && (
+              <div>
+                <h3 className="text-2xl font-bold mb-4 text-center">
+                  {dropSettings.dropProducts && dropSettings.dropProducts.length > 0 ? 
+                    "Drop Exclusive Items" : "Exclusive Products"}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {dropExclusiveProducts.map((product) => (
+                    <ProductCard key={product._id} product={product} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-400 text-lg">
+              No products available in this drop yet. Check back soon!
+            </p>
+          </div>
+        );
+      })()}
     </div>
+  );
+}
+
+// Product Card Component for Drop Page
+function ProductCard({ product }: { product: Product }) {
+  return (
+    <Link
+      href={`/store/products/${product.slug.current}`}
+      className="group bg-black/50 border border-gray-700 rounded-lg overflow-hidden hover:border-white transition-colors"
+    >
+      <div className="relative aspect-square overflow-hidden">
+        {product.mainImage && (
+          <Image
+            fill
+            alt={product.name}
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            src={urlForImage(product.mainImage).url() || ""}
+          />
+        )}
+        {!product.inStock && (
+          <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 text-xs rounded">
+            Sold Out
+          </div>
+        )}
+        {product.dropExclusive && (
+          <div className="absolute top-2 left-2 bg-purple-600 text-white px-2 py-1 text-xs rounded">
+            Exclusive
+          </div>
+        )}
+      </div>
+      <div className="p-4">
+        <h3 className="text-xl font-bold mb-2 group-hover:text-gray-300 transition-colors">
+          {product.name}
+        </h3>
+        <div className="flex items-center gap-2 mb-2">
+          <p className="font-bold text-lg">${product.price}</p>
+          {product.comparePrice && product.comparePrice > product.price && (
+            <p className="text-gray-400 line-through text-sm">
+              ${product.comparePrice}
+            </p>
+          )}
+        </div>
+        {product.description && (
+          <p className="text-gray-400 text-sm line-clamp-2">
+            {product.description}
+          </p>
+        )}
+      </div>
+    </Link>
   );
 }

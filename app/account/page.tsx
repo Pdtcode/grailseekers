@@ -32,7 +32,7 @@ export default function AccountPage() {
   const photoURL = user?.photoURL || defaultAvatar;
 
   return (
-    <div className="bg-white shadow rounded-lg p-6">
+    <div className=" shadow rounded-lg p-6">
       <h2 className="text-xl font-semibold mb-6">Account Information</h2>
       
       <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-8">

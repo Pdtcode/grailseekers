@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {images: {
+const nextConfig = {
+  images: {
     remotePatterns: [
       {
         protocol: "https",
@@ -20,4 +21,12 @@ const nextConfig = {images: {
   },
 }
 
-module.exports = nextConfig
+// Define allowed development origins
+const devConfig = {
+  allowedDevOrigins: ['local-origin.dev', '*.local-origin.dev', '*.ngrok-free.app'],
+}
+
+module.exports = {
+  ...nextConfig,
+  ...devConfig,
+}

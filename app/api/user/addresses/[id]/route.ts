@@ -39,7 +39,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const addressId = params.id;
+    const addressId = await params.id;
     
     // Get the address
     const address = await prisma.address.findUnique({
@@ -82,7 +82,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const addressId = params.id;
+    const addressId = await params.id;
     
     // Get the address
     const existingAddress = await prisma.address.findUnique({
@@ -159,7 +159,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const addressId = params.id;
+    const addressId = await params.id;
     
     // Get the address
     const address = await prisma.address.findUnique({
