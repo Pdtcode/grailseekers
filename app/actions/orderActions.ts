@@ -1,6 +1,7 @@
-'use server';
+/* eslint-disable no-console */
+"use server";
 
-import prisma from '@/lib/prismaClient';
+import prisma from "@/lib/prismaClient";
 
 /**
  * Get all orders for a specific user
@@ -9,7 +10,7 @@ import prisma from '@/lib/prismaClient';
 export async function getUserOrders(userId: string) {
   try {
     if (!userId) {
-      throw new Error('User ID is required');
+      throw new Error("User ID is required");
     }
 
     // Explicitly filter by userId to ensure only the current user's orders are returned
@@ -27,13 +28,13 @@ export async function getUserOrders(userId: string) {
         shippingAddress: true,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
     return orders;
   } catch (error) {
-    console.error('Error fetching user orders:', error);
+    console.error("Error fetching user orders:", error);
     throw error;
   }
 }
@@ -44,13 +45,11 @@ export async function getUserOrders(userId: string) {
 export async function getOrderById(orderId: string) {
   try {
     if (!orderId) {
-      throw new Error('Order ID is required');
+      throw new Error("Order ID is required");
     }
 
     const order = await prisma.order.findUnique({
-      where: {
-        id: orderId,
-      },
+      where: { id: orderId },
       include: {
         items: {
           include: {
@@ -62,9 +61,13 @@ export async function getOrderById(orderId: string) {
       },
     });
 
+    if (!order) {
+      throw new Error(`Order with ID ${orderId} not found`);
+    }
+
     return order;
   } catch (error) {
-    console.error('Error fetching order details:', error);
+    console.error("Error fetching order details:", error);
     throw error;
   }
 }
