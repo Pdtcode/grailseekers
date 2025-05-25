@@ -82,6 +82,7 @@ export interface Product {
   mainImage: SanityImageObject;
   images?: SanityImageObject[];
   categories: Category[];
+  collections?: Collection[];
   inStock: boolean;
   featured?: boolean;
   publishedAt?: string;

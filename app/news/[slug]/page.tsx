@@ -11,8 +11,14 @@ import { Post } from "@/types";
 
 export const revalidate = 60;
 
+interface PageProps {
+  params: Promise<{
+    slug: string;
+  }>;
+}
+
 // Generate static params for all blog posts
-export async function generateStaticParams() {
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
   const posts = await client.fetch<Post[]>(`*[_type == "post"] { slug }`);
 
   return posts.map((post) => ({
@@ -20,7 +26,7 @@ export async function generateStaticParams() {
   }));
 }
 
-async function getPostData(slug: string) {
+async function getPostData(slug: string): Promise<{ post: Post | null }> {
   const post = await client.fetch<Post>(postBySlugQuery, { slug });
 
   return { post };
@@ -28,11 +34,8 @@ async function getPostData(slug: string) {
 
 export default async function BlogPostPage({
   params,
-}: {
-  params: { slug: string };
-}) {
-  // Ensure we're properly awaiting and accessing params
-  const slug = params.slug;
+}: PageProps): Promise<JSX.Element> {
+  const { slug } = await params;
   const { post } = await getPostData(slug);
 
   if (!post) {
@@ -42,7 +45,8 @@ export default async function BlogPostPage({
           Post Not Found
         </h1>
         <p className="text-gray-500 dark:text-gray-400 mb-8">
-          The post you're looking for doesn't exist or has been removed.
+          The post you&apos;re looking for doesn&apos;t exist or has been
+          removed.
         </p>
         <Link
           className="bg-gray-900 dark:bg-gray-100 text-white dark:text-black px-6 py-3 rounded-lg inline-block transition hover:opacity-90"

@@ -54,7 +54,7 @@ export default async function NewsPage() {
                 </span>
               </div>
               <h2
-                className={title({ size: "s", className: "mb-2" }).toString()}
+                className={title({ size: "sm", className: "mb-2" }).toString()}
               >
                 {posts[0].title}
               </h2>

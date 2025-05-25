@@ -69,9 +69,9 @@ export const StripePaymentForm = ({
     mode: "setup" as const,
     currency: "usd",
     appearance: {
-      theme: "stripe",
+      theme: "stripe" as const,
     },
-    loader: "auto",
+    loader: "auto" as const,
   };
 
   return (

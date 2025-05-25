@@ -10,9 +10,9 @@ import { collectionBySlugQuery } from "@/lib/queries";
 export const revalidate = 60; // Revalidate this page every 60 seconds
 
 interface CollectionPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 async function getCollectionData(slug: string) {
@@ -20,7 +20,8 @@ async function getCollectionData(slug: string) {
 }
 
 export default async function CollectionPage({ params }: CollectionPageProps) {
-  const collection = await getCollectionData(params.slug);
+  const { slug } = await params;
+  const collection = await getCollectionData(slug);
 
   if (!collection) {
     notFound();
@@ -46,19 +47,19 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <Link
-        href="/store"
         className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-6 hover:underline"
+        href="/store"
       >
         <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
           fill="none"
+          height="16"
           stroke="currentColor"
-          strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          width="16"
+          xmlns="http://www.w3.org/2000/svg"
         >
           <path d="m15 18-6-6 6-6" />
         </svg>
@@ -74,10 +75,10 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
         {collection.mainImage && (
           <Image
             fill
+            priority
             alt={collection.title}
             className="object-cover"
             src={urlForImage(collection.mainImage).url()}
-            priority
           />
         )}
         <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-end p-6">
@@ -131,11 +132,12 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
               </h3>
               <div className="flex items-center gap-2">
                 <p className="font-bold">${product.price}</p>
-                {product.comparePrice && product.comparePrice > product.price && (
-                  <p className="text-gray-500 line-through">
-                    ${product.comparePrice}
-                  </p>
-                )}
+                {product.comparePrice &&
+                  product.comparePrice > product.price && (
+                    <p className="text-gray-500 line-through">
+                      ${product.comparePrice}
+                    </p>
+                  )}
               </div>
             </Link>
           ))}

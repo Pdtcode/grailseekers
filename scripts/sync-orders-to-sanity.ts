@@ -61,7 +61,7 @@ async function syncAllOrders() {
 
         // Prepare shipping address
         const shippingAddress = order.shippingAddress ? {
-          name: order.shippingAddress.name,
+          name: order.user.name || 'Unknown',
           street: order.shippingAddress.street,
           city: order.shippingAddress.city,
           state: order.shippingAddress.state,

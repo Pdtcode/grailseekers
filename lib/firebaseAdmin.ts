@@ -1,22 +1,28 @@
-import { getApps, initializeApp, cert, App } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
+import {
+  getApps,
+  initializeApp,
+  cert,
+  App,
+  ServiceAccount,
+} from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
 
 // Initialize Firebase Admin SDK
 export function initFirebaseAdmin(): App {
   const apps = getApps();
-  
+
   if (apps.length > 0) {
     return apps[0];
   }
-  
-  const serviceAccount = {
-    project_id: process.env.FIREBASE_ADMIN_PROJECT_ID,
-    client_email: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
-    private_key: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n')
+
+  const serviceAccount: ServiceAccount = {
+    projectId: process.env.FIREBASE_ADMIN_PROJECT_ID!,
+    clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL!,
+    privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, "\n")!,
   };
-  
+
   return initializeApp({
-    credential: cert(serviceAccount)
+    credential: cert(serviceAccount),
   });
 }
 

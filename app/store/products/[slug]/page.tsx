@@ -7,6 +7,7 @@ import { client } from "@/sanity/lib/client";
 import { urlForImage } from "@/sanity/lib/image";
 import { productBySlugQuery } from "@/lib/queries";
 import { AddToCartButtonWrapper } from "@/components/product-actions";
+import { Product, Collection } from "@/types";
 
 export const revalidate = 60; // Revalidate this page every 60 seconds
 
@@ -16,12 +17,11 @@ interface ProductPageProps {
   }>;
 }
 
-async function getProduct(slug: string) {
+async function getProduct(slug: string): Promise<Product | null> {
   return await client.fetch(productBySlugQuery, { slug });
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  // Await the params object before accessing its properties
   const { slug } = await params;
   const product = await getProduct(slug);
 
@@ -59,7 +59,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 >
                   <Image
                     fill
-                    alt={`${product.name} ${index + 1}`}
+                    alt={`${product.name}`}
                     className="object-cover"
                     src={urlForImage(image).url()}
                   />
@@ -133,7 +133,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 Part of Collections
               </h2>
               <div className="flex flex-wrap gap-2">
-                {product.collections.map((collection) => (
+                {product.collections.map((collection: Collection) => (
                   <Link
                     key={collection._id}
                     className="px-3 py-1 bg-gray-200 dark:bg-gray-800 rounded-full hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors text-sm"

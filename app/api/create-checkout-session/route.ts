@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
 
@@ -8,16 +9,45 @@ if (!process.env.STRIPE_SECRET_KEY) {
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+interface Item {
+  id: string;
+  variantId?: string;
+  name: string;
+  description?: string;
+  image?: string;
+  price: number;
+  quantity: number;
+}
+
+interface ShippingInfo {
+  firstName: string;
+  lastName: string;
+  email?: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+}
+
+interface RequestBody {
+  items: Item[];
+  returnUrl?: string;
+  shippingInfo?: ShippingInfo;
+  userId?: string;
+}
+
 export async function POST(request: Request) {
   try {
-    const { items, returnUrl, shippingInfo, userId } = await request.json();
+    const { items, returnUrl, shippingInfo, userId }: RequestBody =
+      await request.json();
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: "No items provided" }, { status: 400 });
     }
 
     // Format the items for Stripe
-    const lineItems = items.map((item: any) => ({
+    const lineItems = items.map((item: Item) => ({
       price_data: {
         currency: "usd",
         product_data: {
@@ -25,8 +55,8 @@ export async function POST(request: Request) {
           images: item.image ? [item.image] : undefined,
           description: item.description || undefined,
           metadata: {
-            product_id: item.id || ''
-          }
+            product_id: item.id || "",
+          },
         },
         unit_amount: Math.round(item.price * 100), // convert dollars to cents
       },
@@ -35,12 +65,13 @@ export async function POST(request: Request) {
 
     // Calculate total price
     const total = items.reduce(
-      (sum: number, item: any) => sum + item.price * item.quantity,
-      0
+      (sum: number, item: Item) => sum + item.price * item.quantity,
+      0,
     );
 
     // Prepare shipping address if available
-    let shippingAddress = '';
+    let shippingAddress = "";
+
     if (shippingInfo) {
       shippingAddress = `${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.state}, ${shippingInfo.zipCode}, ${shippingInfo.country}`;
     }
@@ -62,17 +93,21 @@ export async function POST(request: Request) {
       // Store detailed metadata for order creation in webhooks
       metadata: {
         order_id: `order-${Date.now()}`,
-        user_id: userId || '',
-        customer_email: shippingInfo?.email || '',
-        customer_name: shippingInfo ? `${shippingInfo.firstName} ${shippingInfo.lastName}` : '',
+        user_id: userId || "",
+        customer_email: shippingInfo?.email || "",
+        customer_name: shippingInfo
+          ? `${shippingInfo.firstName} ${shippingInfo.lastName}`
+          : "",
         shipping_address: shippingAddress,
-        items: JSON.stringify(items.map(item => ({
-          id: item.id,
-          variantId: item.variantId,
-          quantity: item.quantity,
-          price: item.price
-        }))),
-        total: total.toString()
+        items: JSON.stringify(
+          items.map((item) => ({
+            id: item.id,
+            variantId: item.variantId,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+        ),
+        total: total.toString(),
       },
     });
 
