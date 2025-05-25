@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -8,7 +9,10 @@ import Link from "next/link";
 import CircularTextSpinner from "@/components/circular-text-spinner";
 import VideoPreloader from "@/components/video-preloader";
 import { client } from "@/sanity/lib/client";
-import { activeDropSettingsQuery, dropExclusiveProductsQuery } from "@/lib/queries";
+import {
+  activeDropSettingsQuery,
+  dropExclusiveProductsQuery,
+} from "@/lib/queries";
 import { urlForImage } from "@/sanity/lib/image";
 import { Product } from "@/types";
 
@@ -31,7 +35,9 @@ export default function DropPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [dropSettings, setDropSettings] = useState<DropSettings>({});
-  const [dropExclusiveProducts, setDropExclusiveProducts] = useState<Product[]>([]);
+  const [dropExclusiveProducts, setDropExclusiveProducts] = useState<Product[]>(
+    [],
+  );
   const [isVideoPreloaded, setIsVideoPreloaded] = useState(false);
   const router = useRouter();
 
@@ -48,7 +54,7 @@ export default function DropPage() {
           // Use the predefined query from queries.ts
           const [settings, exclusiveProducts] = await Promise.all([
             client.fetch(activeDropSettingsQuery),
-            client.fetch(dropExclusiveProductsQuery)
+            client.fetch(dropExclusiveProductsQuery),
           ]);
 
           console.log("Drop page settings:", settings);
@@ -125,7 +131,7 @@ export default function DropPage() {
             onPreloaded={handleVideoPreloaded}
           />
         )}
-        
+
         <div className="max-w-sm mx-auto px-4">
           <div className="bg-black/60 backdrop-blur-sm mb-8 p-6 rounded-lg border border-gray-700">
             <h1 className="text-4xl font-bold animate-pulse">
@@ -180,24 +186,29 @@ export default function DropPage() {
 
         return allDropProducts.length > 0 ? (
           <div>
-            {dropSettings.dropProducts && dropSettings.dropProducts.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-2xl font-bold mb-4 text-center">Featured Drop Items</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {dropSettings.dropProducts.map((product) => (
-                    <ProductCard key={product._id} product={product} />
-                  ))}
+            {dropSettings.dropProducts &&
+              dropSettings.dropProducts.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-2xl font-bold mb-4 text-center">
+                    Featured Drop Items
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {dropSettings.dropProducts.map((product) => (
+                      <ProductCard key={product._id} product={product} />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-            
+              )}
+
             {dropExclusiveProducts.length > 0 && (
               <div>
                 <h3 className="text-2xl font-bold mb-4 text-center">
-                  {dropSettings.dropProducts && dropSettings.dropProducts.length > 0 ? 
-                    "Drop Exclusive Items" : "Exclusive Products"}
+                  {dropSettings.dropProducts &&
+                  dropSettings.dropProducts.length > 0
+                    ? "Drop Exclusive Items"
+                    : "Exclusive Products"}
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6">
                   {dropExclusiveProducts.map((product) => (
                     <ProductCard key={product._id} product={product} />
                   ))}
@@ -221,8 +232,8 @@ export default function DropPage() {
 function ProductCard({ product }: { product: Product }) {
   return (
     <Link
-      href={`/store/products/${product.slug.current}`}
       className="group bg-black/50 border border-gray-700 rounded-lg overflow-hidden hover:border-white transition-colors"
+      href={`/store/products/${product.slug.current}`}
     >
       <div className="relative aspect-square overflow-hidden">
         {product.mainImage && (

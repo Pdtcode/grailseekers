@@ -1,4 +1,4 @@
-import { defineField, defineType } from 'sanity'
+import { defineField, defineType } from "sanity";
 
 export const productType = defineType({
   name: "product",
@@ -106,7 +106,9 @@ export const productType = defineType({
               type: "string",
               description: "Unique identifier for this variant",
               // We'll add a random ID when this is empty
-              initialValue: () => Date.now().toString(36) + Math.random().toString(36).substring(2, 5),
+              initialValue: () =>
+                Date.now().toString(36) +
+                Math.random().toString(36).substring(2, 5),
             }),
             defineField({
               name: "name",
@@ -118,10 +120,12 @@ export const productType = defineType({
               name: "options",
               title: "Options",
               type: "array",
-              of: [{ 
-                type: "string",
-                // Each option will get an auto-generated unique key
-              }],
+              of: [
+                {
+                  type: "string",
+                  // Each option will get an auto-generated unique key
+                },
+              ],
               validation: (Rule) => Rule.required(),
             }),
           ],
@@ -137,7 +141,8 @@ export const productType = defineType({
     defineField({
       name: "dropExclusive",
       title: "Drop Exclusive",
-      description: "Only show this product in password-protected drops, not in the main store",
+      description:
+        "Only show this product in password-protected drops, not in the main store",
       type: "boolean",
       initialValue: false,
     }),
@@ -156,4 +161,4 @@ export const productType = defineType({
       };
     },
   },
-})
+});

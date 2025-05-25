@@ -1,4 +1,4 @@
-import { groq } from 'next-sanity';
+import { groq } from "next-sanity";
 
 /**
  * Query to get all blog posts

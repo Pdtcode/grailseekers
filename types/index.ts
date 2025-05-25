@@ -61,7 +61,7 @@ export interface Collection {
   endDate?: string;
   featured?: boolean;
   highlight?: boolean;
-  collectionType?: 'seasonal' | 'limited' | 'permanent' | 'collaboration';
+  collectionType?: "seasonal" | "limited" | "permanent" | "collaboration";
 }
 
 // Product Variant

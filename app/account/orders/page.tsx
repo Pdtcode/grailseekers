@@ -1,8 +1,10 @@
-'use client';
+/* eslint-disable no-console */
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { formatOrderDate, getOrderStatusText } from '@/lib/orderUtils';
+import { useState, useEffect } from "react";
+
+import { useAuth } from "@/context/AuthContext";
+import { formatOrderDate, getOrderStatusText } from "@/lib/orderUtils";
 
 interface OrderItem {
   id: string;
@@ -37,28 +39,33 @@ export default function OrdersPage() {
     async function fetchOrders() {
       if (!user) {
         setLoading(false);
+
         return;
       }
 
       try {
-        // Use the user's email as an identifier
         const email = user.email;
-        
-        // Pass the email as a query parameter to identify the user
-        const response = await fetch(`/api/user/orders?email=${encodeURIComponent(email)}`);
-        
+
+        if (!email) {
+          throw new Error("User email is missing");
+        }
+
+        const response = await fetch(
+          `/api/user/orders?email=${encodeURIComponent(email)}`,
+        );
 
         if (!response.ok) {
-          throw new Error('Failed to fetch orders');
+          throw new Error("Failed to fetch orders");
         }
 
         const data = await response.json();
+
         // Set only the orders that belong to the current user
         setOrders(data.orders);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching orders:', err);
-        setError('Failed to load your orders. Please try again later.');
+        console.error("Error fetching orders:", err);
+        setError("Failed to load your orders. Please try again later.");
         setLoading(false);
       }
     }
@@ -84,7 +91,7 @@ export default function OrdersPage() {
   return (
     <div className=" shadow rounded-lg p-6">
       <h2 className="text-xl font-semibold mb-6">My Orders</h2>
-      
+
       {loading ? (
         <div className="text-center py-12">
           <p className="text-gray-500">Loading your orders...</p>
@@ -105,32 +112,45 @@ export default function OrdersPage() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-medium">${Number(order.total).toFixed(2)}</p>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    order.status === 'DELIVERED' ? 'bg-green-100 text-green-800' : 
-                    order.status === 'CANCELLED' ? 'bg-red-100 text-red-800' : 
-                    'bg-blue-100 text-blue-800'
-                  }`}>
+                  <p className="font-medium">
+                    ${Number(order.total).toFixed(2)}
+                  </p>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      order.status === "DELIVERED"
+                        ? "bg-green-100 text-green-800"
+                        : order.status === "CANCELLED"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-blue-100 text-blue-800"
+                    }`}
+                  >
                     {getOrderStatusText(order.status)}
                   </span>
                 </div>
               </div>
-              
+
               <div className="p-4">
                 <h3 className="text-sm font-medium  mb-2">Items</h3>
                 <ul className="divide-y divide-gray-200">
                   {order.items.map((item) => (
                     <li key={item.id} className="py-3 flex justify-between">
                       <div>
-                        <p className="text-sm font-medium">{item.product.name}</p>
-                        {item.variant && (item.variant.size || item.variant.color) && (
-                          <p className="text-xs text-gray-500">
-                            {item.variant.size && `Size: ${item.variant.size}`} 
-                            {item.variant.size && item.variant.color && ' | '} 
-                            {item.variant.color && `Color: ${item.variant.color}`}
-                          </p>
-                        )}
-                        <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                        <p className="text-sm font-medium">
+                          {item.product.name}
+                        </p>
+                        {item.variant &&
+                          (item.variant.size || item.variant.color) && (
+                            <p className="text-xs text-gray-500">
+                              {item.variant.size &&
+                                `Size: ${item.variant.size}`}
+                              {item.variant.size && item.variant.color && " | "}
+                              {item.variant.color &&
+                                `Color: ${item.variant.color}`}
+                            </p>
+                          )}
+                        <p className="text-sm text-gray-500">
+                          Qty: {item.quantity}
+                        </p>
                       </div>
                       <p className="text-sm font-medium">
                         ${(Number(item.price) * item.quantity).toFixed(2)}
@@ -144,7 +164,9 @@ export default function OrdersPage() {
         </div>
       ) : (
         <div className="text-center py-12">
-          <p className="text-gray-500">You haven't placed any orders yet.</p>
+          <p className="text-gray-500">
+            You haven&apos;t placed any orders yet.
+          </p>
         </div>
       )}
     </div>

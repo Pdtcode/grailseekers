@@ -12,17 +12,11 @@ export const urlFor = (source: SanityImageSource) => {
 
 // Aliased function with better error handling
 export const urlForImage = (source: SanityImageSource) => {
-  // Check if source exists at all
   if (!source) {
     return {
-      url: "",
-      width: 0,
-      height: 0,
-      format: "",
+      url: () => "", // return a function that returns an empty string
     };
   }
 
-  // For safety, always return the builder even if asset structure is unknown
-  // The builder will handle the proper construction of the URL
   return builder.image(source);
 };

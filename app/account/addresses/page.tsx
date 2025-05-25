@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { getIdToken } from 'firebase/auth';
+import { useState, useEffect } from "react";
+import { getIdToken } from "firebase/auth";
+
+import { useAuth } from "@/context/AuthContext";
 
 interface Address {
   id: string;
@@ -23,41 +24,45 @@ export default function AddressesPage() {
   const [error, setError] = useState<string | null>(null);
 
   const emptyAddress = {
-    id: '',
-    street: '',
-    city: '',
-    state: '',
-    postalCode: '',
-    country: 'United States',
-    isDefault: false
+    id: "",
+    street: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    country: "United States",
+    isDefault: false,
   };
 
   const [currentAddress, setCurrentAddress] = useState<Address>(emptyAddress);
 
   const fetchAddresses = async () => {
     if (!user) return;
-    
+
     try {
       setLoading(true);
       const token = await getIdToken(user);
-      
-      const response = await fetch('/api/user/addresses', {
+
+      const response = await fetch("/api/user/addresses", {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Error response from server:', errorData);
-        throw new Error(errorData.message || 'Failed to fetch addresses');
+
+        console.error("Error response from server:", errorData);
+        throw new Error(errorData.message || "Failed to fetch addresses");
       }
-      
+
       const data = await response.json();
+
       setAddresses(data);
     } catch (err: any) {
-      console.error('Error fetching addresses:', err);
-      setError(`Failed to load your saved addresses: ${err.message || 'Please try again.'}`);
+      console.error("Error fetching addresses:", err);
+      setError(
+        `Failed to load your saved addresses: ${err.message || "Please try again."}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -72,124 +77,127 @@ export default function AddressesPage() {
     }
   }, [user]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value, type } = e.target as HTMLInputElement;
-    
+
     setCurrentAddress({
       ...currentAddress,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      [name]:
+        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     });
   };
 
   const handleAddAddress = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!user) return;
-    
+
     try {
       const token = await getIdToken(user);
-      
-      const response = await fetch('/api/user/addresses', {
-        method: 'POST',
+
+      const response = await fetch("/api/user/addresses", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(currentAddress)
+        body: JSON.stringify(currentAddress),
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to add address');
+        throw new Error("Failed to add address");
       }
-      
+
       setIsAdding(false);
       setCurrentAddress(emptyAddress);
       fetchAddresses();
     } catch (err) {
-      console.error('Error adding address:', err);
-      setError('Failed to save address. Please try again.');
+      console.error("Error adding address:", err);
+      setError("Failed to save address. Please try again.");
     }
   };
 
   const handleUpdateAddress = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!user || !isEditing) return;
-    
+
     try {
       const token = await getIdToken(user);
-      
+
       const response = await fetch(`/api/user/addresses/${isEditing}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(currentAddress)
+        body: JSON.stringify(currentAddress),
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to update address');
+        throw new Error("Failed to update address");
       }
-      
+
       setIsEditing(null);
       setCurrentAddress(emptyAddress);
       fetchAddresses();
     } catch (err) {
-      console.error('Error updating address:', err);
-      setError('Failed to update address. Please try again.');
+      console.error("Error updating address:", err);
+      setError("Failed to update address. Please try again.");
     }
   };
 
   const handleDeleteAddress = async (id: string) => {
     if (!user) return;
-    
-    if (!confirm('Are you sure you want to delete this address?')) {
+
+    if (!confirm("Are you sure you want to delete this address?")) {
       return;
     }
-    
+
     try {
       const token = await getIdToken(user);
-      
+
       const response = await fetch(`/api/user/addresses/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to delete address');
+        throw new Error("Failed to delete address");
       }
-      
+
       fetchAddresses();
     } catch (err) {
-      console.error('Error deleting address:', err);
-      setError('Failed to delete address. Please try again.');
+      console.error("Error deleting address:", err);
+      setError("Failed to delete address. Please try again.");
     }
   };
 
   const handleSetDefault = async (id: string) => {
     if (!user) return;
-    
+
     try {
       const token = await getIdToken(user);
-      
+
       const response = await fetch(`/api/user/addresses/${id}/default`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to set default address');
+        throw new Error("Failed to set default address");
       }
-      
+
       fetchAddresses();
     } catch (err) {
-      console.error('Error setting default address:', err);
-      setError('Failed to set default address. Please try again.');
+      console.error("Error setting default address:", err);
+      setError("Failed to set default address. Please try again.");
     }
   };
 
@@ -217,8 +225,8 @@ export default function AddressesPage() {
         <h2 className="text-xl font-semibold">Shipping Addresses</h2>
         {!isAdding && !isEditing && (
           <button
-            onClick={startAdding}
             className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            onClick={startAdding}
           >
             Add New Address
           </button>
@@ -239,81 +247,101 @@ export default function AddressesPage() {
 
       {/* Add/Edit Address Form */}
       {(isAdding || isEditing) && (
-        <form onSubmit={isEditing ? handleUpdateAddress : handleAddAddress} className="mb-8 border p-4 rounded-md">
-          <h3 className="text-lg font-medium mb-4">{isEditing ? 'Edit Address' : 'Add New Address'}</h3>
-          
+        <form
+          className="mb-8 border p-4 rounded-md"
+          onSubmit={isEditing ? handleUpdateAddress : handleAddAddress}
+        >
+          <h3 className="text-lg font-medium mb-4">
+            {isEditing ? "Edit Address" : "Add New Address"}
+          </h3>
+
           <div className="mb-4">
-            <label htmlFor="street" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1"
+              htmlFor="street"
+            >
               Street Address
             </label>
             <input
-              type="text"
+              required
+              className="w-full p-2 border border-gray-300 rounded-md"
               id="street"
               name="street"
-              required
+              type="text"
               value={currentAddress.street}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md"
             />
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                className="block text-sm font-medium text-gray-700 mb-1"
+                htmlFor="city"
+              >
                 City
               </label>
               <input
-                type="text"
+                required
+                className="w-full p-2 border border-gray-300 rounded-md"
                 id="city"
                 name="city"
-                required
+                type="text"
                 value={currentAddress.city}
                 onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded-md"
               />
             </div>
             <div>
-              <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                className="block text-sm font-medium text-gray-700 mb-1"
+                htmlFor="state"
+              >
                 State / Province
               </label>
               <input
-                type="text"
+                required
+                className="w-full p-2 border border-gray-300 rounded-md"
                 id="state"
                 name="state"
-                required
+                type="text"
                 value={currentAddress.state}
                 onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded-md"
               />
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                className="block text-sm font-medium text-gray-700 mb-1"
+                htmlFor="postalCode"
+              >
                 ZIP / Postal Code
               </label>
               <input
-                type="text"
+                required
+                className="w-full p-2 border border-gray-300 rounded-md"
                 id="postalCode"
                 name="postalCode"
-                required
+                type="text"
                 value={currentAddress.postalCode}
                 onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded-md"
               />
             </div>
             <div>
-              <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                className="block text-sm font-medium text-gray-700 mb-1"
+                htmlFor="country"
+              >
                 Country
               </label>
               <select
+                required
+                className="w-full p-2 border border-gray-300 rounded-md"
                 id="country"
                 name="country"
-                required
                 value={currentAddress.country}
                 onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded-md"
               >
                 <option value="United States">United States</option>
                 <option value="Canada">Canada</option>
@@ -325,31 +353,33 @@ export default function AddressesPage() {
               </select>
             </div>
           </div>
-          
+
           <div className="mb-4">
             <label className="inline-flex items-center">
               <input
-                type="checkbox"
-                name="isDefault"
                 checked={currentAddress.isDefault}
-                onChange={handleInputChange}
                 className="form-checkbox h-5 w-5 text-indigo-600"
+                name="isDefault"
+                type="checkbox"
+                onChange={handleInputChange}
               />
-              <span className="ml-2 text-sm">Set as default shipping address</span>
+              <span className="ml-2 text-sm">
+                Set as default shipping address
+              </span>
             </label>
           </div>
-          
+
           <div className="flex gap-4">
             <button
-              type="submit"
               className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              type="submit"
             >
-              {isEditing ? 'Update Address' : 'Save Address'}
+              {isEditing ? "Update Address" : "Save Address"}
             </button>
             <button
+              className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               type="button"
               onClick={cancelForm}
-              className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Cancel
             </button>
@@ -361,7 +391,9 @@ export default function AddressesPage() {
       {!loading && !isAdding && !isEditing && (
         <div className="space-y-4">
           {addresses.length === 0 ? (
-            <p className="text-gray-500 py-4">No shipping addresses saved yet.</p>
+            <p className="text-gray-500 py-4">
+              No shipping addresses saved yet.
+            </p>
           ) : (
             addresses.map((address) => (
               <div key={address.id} className="border rounded-md p-4 relative">
@@ -372,26 +404,28 @@ export default function AddressesPage() {
                 )}
                 <div className="mb-2">
                   <p className="font-medium">{address.street}</p>
-                  <p>{address.city}, {address.state} {address.postalCode}</p>
+                  <p>
+                    {address.city}, {address.state} {address.postalCode}
+                  </p>
                   <p>{address.country}</p>
                 </div>
                 <div className="flex gap-2 mt-4">
                   <button
-                    onClick={() => startEditing(address)}
                     className="text-sm text-indigo-600 hover:text-indigo-800"
+                    onClick={() => startEditing(address)}
                   >
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDeleteAddress(address.id)}
                     className="text-sm text-red-600 hover:text-red-800"
+                    onClick={() => handleDeleteAddress(address.id)}
                   >
                     Delete
                   </button>
                   {!address.isDefault && (
                     <button
-                      onClick={() => handleSetDefault(address.id)}
                       className="text-sm text-gray-600 hover:text-gray-800"
+                      onClick={() => handleSetDefault(address.id)}
                     >
                       Set as Default
                     </button>
