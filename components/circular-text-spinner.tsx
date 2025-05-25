@@ -86,28 +86,6 @@ const CircularTextSpinner = ({
         {renderCircularText()}
       </div>
       
-      {/* Add the spinning animation keyframes */}
-      <style jsx global>{`
-        @keyframes spin {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-        
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 0.6;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.8;
-            transform: scale(1.05);
-          }
-        }
-      `}</style>
     </div>
   );
 };
