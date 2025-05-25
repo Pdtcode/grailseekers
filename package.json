@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "CI='' next build",
+    "build": "CI='false' next build",
     "start": "next start",
     "lint": "eslint --fix",
     "db:migrate": "prisma migrate dev",

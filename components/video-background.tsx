@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 "use client";
 
 import { ReactNode, useEffect, useRef, useState } from "react";
