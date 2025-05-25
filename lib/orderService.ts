@@ -1,5 +1,5 @@
-import prisma from './prismaClient';
-import { Prisma } from './generated/prisma';
+import prisma from "./prismaClient";
+import { Prisma } from "./generated/prisma";
 
 /**
  * Creates a new order in the database
@@ -14,15 +14,15 @@ export async function createOrder(
   }>,
   total: number,
   shippingAddressId?: string,
-  stripePaymentIntentId?: string
+  stripePaymentIntentId?: string,
 ) {
   try {
     if (!userId) {
-      throw new Error('User ID is required');
+      throw new Error("User ID is required");
     }
 
     if (!items || items.length === 0) {
-      throw new Error('Order items are required');
+      throw new Error("Order items are required");
     }
 
     // Generate a unique order number with timestamp
@@ -34,7 +34,7 @@ export async function createOrder(
         orderNumber,
         userId,
         total,
-        status: 'PROCESSING',
+        status: "PROCESSING",
         shippingAddressId,
         stripePaymentIntentId,
       },
@@ -69,7 +69,7 @@ export async function createOrder(
 
     return order;
   } catch (error) {
-    console.error('Error creating order:', error);
+    console.error("Error creating order:", error);
     throw error;
   }
 }
@@ -77,10 +77,13 @@ export async function createOrder(
 /**
  * Updates an order's status
  */
-export async function updateOrderStatus(orderId: string, status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED') {
+export async function updateOrderStatus(
+  orderId: string,
+  status: "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED",
+) {
   try {
     if (!orderId) {
-      throw new Error('Order ID is required');
+      throw new Error("Order ID is required");
     }
 
     const order = await prisma.order.update({
@@ -91,25 +94,28 @@ export async function updateOrderStatus(orderId: string, status: 'PENDING' | 'PR
     // Sync order to Sanity after status update
     try {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+
       if (appUrl) {
         const syncResponse = await fetch(`${appUrl}/api/sync/orders`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ orderId: order.id }),
         });
-        
+
         if (!syncResponse.ok) {
-          console.error(`Failed to sync order ${order.id} to Sanity after status update`);
+          console.error(
+            `Failed to sync order ${order.id} to Sanity after status update`,
+          );
         }
       }
     } catch (syncError) {
-      console.error('Error syncing order to Sanity:', syncError);
+      console.error("Error syncing order to Sanity:", syncError);
       // Continue processing, don't fail the order update
     }
 
     return order;
   } catch (error) {
-    console.error('Error updating order status:', error);
+    console.error("Error updating order status:", error);
     throw error;
   }
 }
@@ -117,27 +123,30 @@ export async function updateOrderStatus(orderId: string, status: 'PENDING' | 'PR
 /**
  * Links a Stripe payment intent to an existing order
  */
-export async function linkStripePaymentToOrder(orderId: string, stripePaymentIntentId: string) {
+export async function linkStripePaymentToOrder(
+  orderId: string,
+  stripePaymentIntentId: string,
+) {
   try {
     if (!orderId) {
-      throw new Error('Order ID is required');
+      throw new Error("Order ID is required");
     }
 
     if (!stripePaymentIntentId) {
-      throw new Error('Stripe payment intent ID is required');
+      throw new Error("Stripe payment intent ID is required");
     }
 
     const order = await prisma.order.update({
       where: { id: orderId },
-      data: { 
+      data: {
         stripePaymentIntentId,
-        status: 'PROCESSING' // Update status when payment is linked
+        status: "PROCESSING", // Update status when payment is linked
       },
     });
 
     return order;
   } catch (error) {
-    console.error('Error linking Stripe payment to order:', error);
+    console.error("Error linking Stripe payment to order:", error);
     throw error;
   }
 }
@@ -145,10 +154,12 @@ export async function linkStripePaymentToOrder(orderId: string, stripePaymentInt
 /**
  * Finds an order by Stripe payment intent ID
  */
-export async function findOrderByStripePaymentIntent(stripePaymentIntentId: string) {
+export async function findOrderByStripePaymentIntent(
+  stripePaymentIntentId: string,
+) {
   try {
     if (!stripePaymentIntentId) {
-      throw new Error('Stripe payment intent ID is required');
+      throw new Error("Stripe payment intent ID is required");
     }
 
     const order = await prisma.order.findFirst({
@@ -166,7 +177,7 @@ export async function findOrderByStripePaymentIntent(stripePaymentIntentId: stri
 
     return order;
   } catch (error) {
-    console.error('Error finding order by Stripe payment intent:', error);
+    console.error("Error finding order by Stripe payment intent:", error);
     throw error;
   }
 }

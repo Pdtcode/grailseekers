@@ -1,10 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import { Button } from "@heroui/button";
 import { Link } from "@heroui/link";
-import { useAuth } from '@/context/AuthContext';
-import { UserAccountButton } from './user-account-button';
+
+import { UserAccountButton } from "./user-account-button";
+
+import { useAuth } from "@/context/AuthContext";
 
 export const LoginButton = () => {
   const { user } = useAuth();

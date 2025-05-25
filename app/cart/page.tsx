@@ -112,7 +112,11 @@ export default function CartPage() {
                     )}
                   <button
                     className="text-sm text-red-500 hover:underline mt-1"
-                    onClick={() => handleRemoveItem(item.product.slug?.current || item.product._id)}
+                    onClick={() =>
+                      handleRemoveItem(
+                        item.product.slug?.current || item.product._id,
+                      )
+                    }
                   >
                     Remove
                   </button>
@@ -136,7 +140,10 @@ export default function CartPage() {
                   <button
                     className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800"
                     onClick={() =>
-                      handleQuantityChange(item.product.slug?.current || item.product._id, item.quantity - 1)
+                      handleQuantityChange(
+                        item.product.slug?.current || item.product._id,
+                        item.quantity - 1,
+                      )
                     }
                   >
                     -
@@ -145,7 +152,10 @@ export default function CartPage() {
                   <button
                     className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800"
                     onClick={() =>
-                      handleQuantityChange(item.product.slug?.current || item.product._id, item.quantity + 1)
+                      handleQuantityChange(
+                        item.product.slug?.current || item.product._id,
+                        item.quantity + 1,
+                      )
                     }
                   >
                     +

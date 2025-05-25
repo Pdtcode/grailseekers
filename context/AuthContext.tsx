@@ -1,17 +1,24 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { 
-  User, 
-  onAuthStateChanged, 
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+import {
+  User,
+  onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
   GoogleAuthProvider,
   signInWithPopup,
-  getIdToken
-} from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+  getIdToken,
+} from "firebase/auth";
+
+import { auth } from "@/lib/firebase";
 
 interface Address {
   id: string;
@@ -41,7 +48,7 @@ interface AuthContextType {
   syncUser: (firebaseUser: User) => Promise<DbUser | null>;
   getUserAddresses: () => Promise<Address[]>;
   getDefaultAddress: () => Promise<Address | null>;
-  saveAddress: (address: Omit<Address, 'id'>) => Promise<Address>;
+  saveAddress: (address: Omit<Address, "id">) => Promise<Address>;
   updateAddress: (id: string, address: Partial<Address>) => Promise<Address>;
   deleteAddress: (id: string) => Promise<boolean>;
   setDefaultAddress: (id: string) => Promise<boolean>;
@@ -53,37 +60,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [dbUser, setDbUser] = useState<DbUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [addressesCache, setAddressesCache] = useState<Address[]>([]);
+  const [_addressesCache, setAddressesCache] = useState<Address[]>([]);
 
   // Sync user with database
   const syncUser = async (firebaseUser: User): Promise<DbUser | null> => {
     try {
       if (!firebaseUser) return null;
-      
+
       // Get Firebase ID token
       const token = await getIdToken(firebaseUser);
-      
+
       // Call our API to create/update user in database
-      const response = await fetch('/api/user', {
-        method: 'POST',
+      const response = await fetch("/api/user", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (!response.ok) {
         // Use safer logging method to prevent any issues
         const errorText = `Failed to sync user with database: ${response.status}`;
+
         console.warn(errorText);
+
         return null;
       }
-      
+
       const dbUser = await response.json();
+
       return dbUser;
     } catch (error) {
       // Use safer logging method
-      console.warn('Error syncing user with database:', error instanceof Error ? error.message : String(error));
+      console.warn(
+        "Error syncing user with database:",
+        error instanceof Error ? error.message : String(error),
+      );
+
       return null;
     }
   };
@@ -91,15 +105,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
-      
+
       if (firebaseUser) {
         // If user is logged in, sync with database
         const syncedUser = await syncUser(firebaseUser);
+
         setDbUser(syncedUser);
       } else {
         setDbUser(null);
       }
-      
+
       setLoading(false);
     });
 
@@ -108,13 +123,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     const result = await signInWithEmailAndPassword(auth, email, password);
+
     return result.user;
   };
 
   const signUp = async (email: string, password: string) => {
     const result = await createUserWithEmailAndPassword(auth, email, password);
+
     // Sync new user with database
     await syncUser(result.user);
+
     return result.user;
   };
 
@@ -125,8 +143,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
+
     // Sync Google user with database
     await syncUser(result.user);
+
     return result.user;
   };
 
@@ -136,23 +156,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!user) {
         return [];
       }
-      
+
       const token = await getIdToken(user);
-      const response = await fetch('/api/user/addresses', {
+      const response = await fetch("/api/user/addresses", {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to fetch addresses');
+        throw new Error("Failed to fetch addresses");
       }
-      
+
       const addresses = await response.json();
+
       setAddressesCache(addresses);
+
       return addresses;
     } catch (error) {
-      console.warn('Error fetching addresses:', error instanceof Error ? error.message : String(error));
+      console.warn(
+        "Error fetching addresses:",
+        error instanceof Error ? error.message : String(error),
+      );
+
       return [];
     }
   };
@@ -161,76 +187,92 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const getDefaultAddress = async (): Promise<Address | null> => {
     try {
       const addresses = await getUserAddresses();
-      const defaultAddress = addresses.find(addr => addr.isDefault);
+      const defaultAddress = addresses.find((addr) => addr.isDefault);
+
       return defaultAddress || null;
     } catch (error) {
-      console.warn('Error getting default address:', error instanceof Error ? error.message : String(error));
+      console.warn(
+        "Error getting default address:",
+        error instanceof Error ? error.message : String(error),
+      );
+
       return null;
     }
   };
 
   // Save a new address
-  const saveAddress = async (address: Omit<Address, 'id'>): Promise<Address> => {
+  const saveAddress = async (
+    address: Omit<Address, "id">,
+  ): Promise<Address> => {
     try {
       if (!user) {
-        throw new Error('User not authenticated');
+        throw new Error("User not authenticated");
       }
-      
+
       const token = await getIdToken(user);
-      const response = await fetch('/api/user/addresses', {
-        method: 'POST',
+      const response = await fetch("/api/user/addresses", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(address)
+        body: JSON.stringify(address),
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to save address');
+        throw new Error("Failed to save address");
       }
-      
+
       const newAddress = await response.json();
-      
+
       // Refresh the addresses cache
       getUserAddresses();
-      
+
       return newAddress;
     } catch (error) {
-      console.warn('Error saving address:', error instanceof Error ? error.message : String(error));
+      console.warn(
+        "Error saving address:",
+        error instanceof Error ? error.message : String(error),
+      );
       throw error;
     }
   };
 
   // Update an address
-  const updateAddress = async (id: string, address: Partial<Address>): Promise<Address> => {
+  const updateAddress = async (
+    id: string,
+    address: Partial<Address>,
+  ): Promise<Address> => {
     try {
       if (!user) {
-        throw new Error('User not authenticated');
+        throw new Error("User not authenticated");
       }
-      
+
       const token = await getIdToken(user);
       const response = await fetch(`/api/user/addresses/${id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(address)
+        body: JSON.stringify(address),
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to update address');
+        throw new Error("Failed to update address");
       }
-      
+
       const updatedAddress = await response.json();
-      
+
       // Refresh the addresses cache
       getUserAddresses();
-      
+
       return updatedAddress;
     } catch (error) {
-      console.warn('Error updating address:', error instanceof Error ? error.message : String(error));
+      console.warn(
+        "Error updating address:",
+        error instanceof Error ? error.message : String(error),
+      );
       throw error;
     }
   };
@@ -239,27 +281,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const deleteAddress = async (id: string): Promise<boolean> => {
     try {
       if (!user) {
-        throw new Error('User not authenticated');
+        throw new Error("User not authenticated");
       }
-      
+
       const token = await getIdToken(user);
       const response = await fetch(`/api/user/addresses/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to delete address');
+        throw new Error("Failed to delete address");
       }
-      
+
       // Refresh the addresses cache
       getUserAddresses();
-      
+
       return true;
     } catch (error) {
-      console.warn('Error deleting address:', error instanceof Error ? error.message : String(error));
+      console.warn(
+        "Error deleting address:",
+        error instanceof Error ? error.message : String(error),
+      );
+
       return false;
     }
   };
@@ -268,48 +314,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const setDefaultAddress = async (id: string): Promise<boolean> => {
     try {
       if (!user) {
-        throw new Error('User not authenticated');
+        throw new Error("User not authenticated");
       }
-      
+
       const token = await getIdToken(user);
       const response = await fetch(`/api/user/addresses/${id}/default`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to set default address');
+        throw new Error("Failed to set default address");
       }
-      
+
       // Refresh the addresses cache
       getUserAddresses();
-      
+
       return true;
     } catch (error) {
-      console.warn('Error setting default address:', error instanceof Error ? error.message : String(error));
+      console.warn(
+        "Error setting default address:",
+        error instanceof Error ? error.message : String(error),
+      );
+
       return false;
     }
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      dbUser, 
-      loading, 
-      signIn, 
-      signUp, 
-      logOut, 
-      signInWithGoogle, 
-      syncUser,
-      getUserAddresses,
-      getDefaultAddress,
-      saveAddress,
-      updateAddress,
-      deleteAddress,
-      setDefaultAddress
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        dbUser,
+        loading,
+        signIn,
+        signUp,
+        logOut,
+        signInWithGoogle,
+        syncUser,
+        getUserAddresses,
+        getDefaultAddress,
+        saveAddress,
+        updateAddress,
+        deleteAddress,
+        setDefaultAddress,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -317,8 +369,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
+
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
+
   return context;
 }

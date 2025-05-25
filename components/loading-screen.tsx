@@ -1,8 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import CircularTextSpinner from './circular-text-spinner';
-import { fontUDMincho } from '@/config/fonts';
+import { useEffect, useState } from "react";
+
+import CircularTextSpinner from "./circular-text-spinner";
+
+import { fontUDMincho } from "@/config/fonts";
 
 interface LoadingScreenProps {
   isLoading: boolean;
@@ -18,17 +20,17 @@ const LoadingScreen = ({
   isLoading,
   children,
   minimumLoadingTime = 1000,
-  backgroundColor = 'rgba(0, 0, 0, 0.95)',
-  textColor = 'white',
+  backgroundColor = "rgba(0, 0, 0, 0.95)",
+  textColor = "white",
   spinnerSize = 300,
-  text = 'お前はもう死んでいる', // "You are already dead" in Japanese
+  text = "お前はもう死んでいる", // "You are already dead" in Japanese
 }: LoadingScreenProps) => {
   const [showLoader, setShowLoader] = useState(isLoading);
   const [contentReady, setContentReady] = useState(!isLoading);
-  
+
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
-    
+
     if (isLoading) {
       // Show loader immediately when loading starts
       setShowLoader(true);
@@ -43,33 +45,33 @@ const LoadingScreen = ({
         }, 300);
       }, minimumLoadingTime);
     }
-    
+
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [isLoading, minimumLoadingTime, showLoader]);
-  
+
   return (
     <div className={`relative w-full h-full ${fontUDMincho.variable}`}>
       {/* Loading screen */}
-      <div 
+      <div
         className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300 ${
-          showLoader ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          showLoader ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         style={{ backgroundColor }}
       >
-        <CircularTextSpinner 
-          text={text}
-          size={spinnerSize}
-          textColor={textColor}
+        <CircularTextSpinner
           fontFamily={fontUDMincho.style.fontFamily}
+          size={spinnerSize}
+          text={text}
+          textColor={textColor}
         />
       </div>
-      
+
       {/* Content */}
-      <div 
+      <div
         className={`transition-opacity duration-300 ${
-          contentReady ? 'opacity-100' : 'opacity-0'
+          contentReady ? "opacity-100" : "opacity-0"
         }`}
       >
         {children}
