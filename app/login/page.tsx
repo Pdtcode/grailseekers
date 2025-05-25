@@ -114,12 +114,12 @@ export default function LoginPage() {
 
           <div className="flex items-center justify-between">
             <div className="text-sm">
-              <a
+              <Link
                 className="font-medium text-indigo-600 hover:text-indigo-500"
-                href="#"
+                href="/"
               >
                 Forgot your password?
-              </a>
+              </Link>
             </div>
           </div>
 
